@@ -1,15 +1,16 @@
-// Licensed under the Dartastic Pro Software License Agreement.
+// Licensed under the Apache License, Version 2.0
 // Copyright 2025-2026 Mindful Software LLC d/b/a Dartastic.io, All rights reserved.
 
-import 'package:dartastic_opentelemetry/dartastic_opentelemetry.dart';
+import 'package:dartastic_opentelemetry_api/dartastic_opentelemetry_api.dart';
 
 import 'otel_prefect_suppression.dart';
 
 const _tracerName = 'dartastic_otel_libs_prefect';
 
-Tracer _tracer() => OTel.tracerProvider().getTracer(_tracerName);
+APITracer _tracer() => OTelAPI.tracerProvider().getTracer(_tracerName);
 
 class PrefectResult {
+  /// Creates a result.
   const PrefectResult({
     this.accountId,
     this.workspaceId,
@@ -73,8 +74,13 @@ class PrefectResult {
   final int? statusCode;
 }
 
+/// What a traced call returned: the value for the caller plus fields
+/// recorded on the span.
 class PrefectCallResult<T> {
+  /// Creates a call result.
   const PrefectCallResult({required this.value, this.result});
+
+  /// The value returned to the caller.
   final T value;
   final PrefectResult? result;
 }
@@ -102,62 +108,62 @@ Future<T> tracedPrefect<T>({
   final span = _tracer().startSpan(
     'prefect $operation',
     kind: SpanKind.client,
-    attributes: OTel.attributesFromMap(m),
+    attributes: OTelAPI.attributesFromMap(m),
   );
   try {
     final r = await invoke();
     if (r.result != null) {
       final extras = <Attribute<Object>>[];
       if (r.result!.accountId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'prefect.account.id',
           r.result!.accountId!,
         ));
       }
       if (r.result!.workspaceId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'prefect.workspace.id',
           r.result!.workspaceId!,
         ));
       }
       if (r.result!.flowId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'prefect.flow.id',
           r.result!.flowId!,
         ));
       }
       if (r.result!.flowName != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'prefect.flow.name',
           r.result!.flowName!,
         ));
       }
       if (r.result!.deploymentId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'prefect.deployment.id',
           r.result!.deploymentId!,
         ));
       }
       if (r.result!.flowRunId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'prefect.flow_run.id',
           r.result!.flowRunId!,
         ));
       }
       if (r.result!.flowRunName != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'prefect.flow_run.name',
           r.result!.flowRunName!,
         ));
       }
       if (r.result!.taskRunId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'prefect.task_run.id',
           r.result!.taskRunId!,
         ));
       }
       if (r.result!.flowRunState != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'prefect.flow_run.state',
           r.result!.flowRunState!,
         ));
@@ -170,7 +176,7 @@ Future<T> tracedPrefect<T>({
         }
       }
       if (r.result!.taskRunState != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'prefect.task_run.state',
           r.result!.taskRunState!,
         ));
@@ -183,34 +189,34 @@ Future<T> tracedPrefect<T>({
         }
       }
       if (r.result!.workPoolName != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'prefect.work_pool.name',
           r.result!.workPoolName!,
         ));
       }
       if (r.result!.workPoolType != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'prefect.work_pool.type',
           r.result!.workPoolType!,
         ));
       }
       if (r.result!.workQueueName != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'prefect.work_queue.name',
           r.result!.workQueueName!,
         ));
       }
       if (r.result!.runCount != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'prefect.run.count',
           r.result!.runCount!,
         ));
       }
       if (r.result!.tags != null) {
-        extras.add(OTel.attributeString('prefect.tags', r.result!.tags!));
+        extras.add(OTelAPI.attributeString('prefect.tags', r.result!.tags!));
       }
       if (r.result!.statusCode != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'http.response.status_code',
           r.result!.statusCode!,
         ));
@@ -221,13 +227,13 @@ Future<T> tracedPrefect<T>({
           );
         }
       }
-      if (extras.isNotEmpty) span.addAttributes(OTel.attributes(extras));
+      if (extras.isNotEmpty) span.addAttributes(OTelAPI.attributes(extras));
     }
     return r.value;
   } catch (e, st) {
-    span.addAttributes(OTel.attributes([
-      OTel.attributeString(
-        ErrorResource.errorType.key,
+    span.addAttributes(OTelAPI.attributes([
+      OTelAPI.attributeString(
+        ErrorAttributes.errorType.key,
         e.runtimeType.toString(),
       ),
     ]));
